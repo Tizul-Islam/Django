@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Django Auth{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card auth-card p-4">
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <span class="badge bg-success-subtle text-success p-3 rounded-circle fs-3">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold">Create an Account</h4>
+                <p class="text-muted small">Fill out the information below to get started</p>
+            </div>
+
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text small text-muted">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ field.errors|striptags }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-success w-100 py-2 fw-semibold mt-2">
+                    Register
+                </button>
+            </form>
+
+            <hr class="my-4 text-muted">
+
+            <div class="text-center">
+                <span class="text-muted small">Already have an account?</span>
+                <a href="{% url 'login' %}" class="fw-semibold text-primary text-decoration-none small ms-1">
+                    Sign in
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

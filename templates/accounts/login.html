@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | Django Auth{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card auth-card p-4">
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <span class="badge bg-primary-subtle text-primary p-3 rounded-circle fs-3">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold">Sign In</h4>
+                <p class="text-muted small">Enter your credentials to access your account</p>
+            </div>
+
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ field.errors|striptags }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{% url 'password_reset' %}" class="text-decoration-none small text-muted">
+                        Forgot Password?
+                    </a>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                    Login
+                </button>
+            </form>
+
+            <hr class="my-4 text-muted">
+
+            <div class="text-center">
+                <span class="text-muted small">Don't have an account?</span>
+                <a href="{% url 'register' %}" class="fw-semibold text-primary text-decoration-none small ms-1">
+                    Register here
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
