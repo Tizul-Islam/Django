@@ -92,7 +92,24 @@ def api_info_view(request):
         "framework": "Django REST Framework 3.18.3",
         "endpoints": {
             "api_info": "/api/",
+            "api_users": "/api/users/",
             "api_auth_login": "/api-auth/login/",
             "api_auth_logout": "/api-auth/logout/",
         }
     })
+
+
+from rest_framework import generics, permissions
+from .serializers import UserSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UserListAPIView(generics.ListAPIView):
+    """
+    API endpoint that returns user list using DRF Generic Views and ModelSerializer
+    """
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+

@@ -13,8 +13,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
 
-    # REST API Root
+    # REST API Endpoints
     path('api/', views.api_info_view, name='api_info'),
+    path('api/users/', views.UserListAPIView.as_view(), name='api_user_list'),
 
     # Password Change (Logged in)
     path('password-change/', views.change_password_view, name='password_change'),

@@ -62,3 +62,14 @@ class AuthSystemTests(TestCase):
         self.assertIn('framework', response.json())
         self.assertEqual(response.json()['status'], 'success')
 
+    def test_drf_user_list_endpoint(self):
+        response = self.client.get(reverse('api_user_list'))
+        self.assertEqual(response.status_code, 200)
+        users = response.json()
+        self.assertIsInstance(users, list)
+        self.assertTrue(len(users) >= 1)
+        # Check ModelSerializer fields and SerializerMethodField
+        self.assertEqual(users[0]['username'], 'testuser')
+        self.assertIn('full_name', users[0])
+
+
