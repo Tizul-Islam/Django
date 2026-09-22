@@ -55,3 +55,10 @@ class AuthSystemTests(TestCase):
         # Check that one email has been created
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('password-reset-confirm', mail.outbox[0].body)
+
+    def test_drf_api_info_endpoint(self):
+        response = self.client.get(reverse('api_info'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('framework', response.json())
+        self.assertEqual(response.json()['status'], 'success')
+

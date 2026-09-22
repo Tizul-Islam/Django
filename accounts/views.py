@@ -79,3 +79,20 @@ def change_password_view(request):
         form = CustomPasswordChangeForm(request.user)
 
     return render(request, "accounts/change_password.html", {"form": form})
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def api_info_view(request):
+    return Response({
+        "status": "success",
+        "message": "Welcome to Django REST Framework API!",
+        "framework": "Django REST Framework 3.18.3",
+        "endpoints": {
+            "api_info": "/api/",
+            "api_auth_login": "/api-auth/login/",
+            "api_auth_logout": "/api-auth/logout/",
+        }
+    })
