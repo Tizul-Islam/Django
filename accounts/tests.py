@@ -72,4 +72,26 @@ class AuthSystemTests(TestCase):
         self.assertEqual(users[0]['username'], 'testuser')
         self.assertIn('full_name', users[0])
 
+    def test_viewset_and_router(self):
+        # 1. Router list action (user-list)
+        response = self.client.get(reverse('user-list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(len(response.json()) >= 1)
+
+        # 2. Router retrieve action (user-detail)
+        response_detail = self.client.get(reverse('user-detail', kwargs={'pk': self.user.pk}))
+        self.assertEqual(response_detail.status_code, 200)
+        self.assertEqual(response_detail.json()['username'], 'testuser')
+
+        # 3. Custom action 'me' without authentication
+        response_me_anon = self.client.get(reverse('user-me'))
+        self.assertIn(response_me_anon.status_code, [401, 403])
+
+        # 4. Custom action 'me' with authentication
+        self.client.login(username='testuser', password='Password123!')
+        response_me = self.client.get(reverse('user-me'))
+        self.assertEqual(response_me.status_code, 200)
+        self.assertEqual(response_me.json()['username'], 'testuser')
+
+
 

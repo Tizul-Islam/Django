@@ -113,3 +113,21 @@ class UserListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+
+from rest_framework import viewsets
+from rest_framework.decorators import action
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A ViewSet that provides 'list' and 'retrieve' actions for users,
+    plus a custom action 'me' to get the current authenticated user's profile.
+    """
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+

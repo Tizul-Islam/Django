@@ -1,7 +1,12 @@
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from rest_framework.routers import DefaultRouter
 from . import views
 from .forms import CustomPasswordResetForm, CustomSetPasswordForm
+
+# DRF Router
+router = DefaultRouter()
+router.register('users', views.UserViewSet, basename='user')
 
 urlpatterns = [
     # Home & Dashboard
@@ -16,6 +21,7 @@ urlpatterns = [
     # REST API Endpoints
     path('api/', views.api_info_view, name='api_info'),
     path('api/users/', views.UserListAPIView.as_view(), name='api_user_list'),
+    path('api/v1/', include(router.urls)),
 
     # Password Change (Logged in)
     path('password-change/', views.change_password_view, name='password_change'),
