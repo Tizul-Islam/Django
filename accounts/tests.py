@@ -93,5 +93,53 @@ class AuthSystemTests(TestCase):
         self.assertEqual(response_me.status_code, 200)
         self.assertEqual(response_me.json()['username'], 'testuser')
 
+    def test_task_crud_lifecycle(self):
+        self.client.login(username='testuser', password='Password123!')
+
+        # 1. CREATE (POST) -> 201 Created
+        post_response = self.client.post(
+            reverse('task-list'),
+            data={'title': 'Learn Django REST Framework CRUD', 'description': 'Complete the lesson and test'},
+            content_type='application/json'
+        )
+        self.assertEqual(post_response.status_code, 201)
+        task_data = post_response.json()
+        task_id = task_data['id']
+        self.assertEqual(task_data['title'], 'Learn Django REST Framework CRUD')
+        self.assertEqual(task_data['is_completed'], False)
+
+        # 2. READ LIST (GET) -> 200 OK
+        list_response = self.client.get(reverse('task-list'))
+        self.assertEqual(list_response.status_code, 200)
+        self.assertTrue(len(list_response.json()) >= 1)
+
+        # 3. READ DETAIL (GET) -> 200 OK
+        detail_response = self.client.get(reverse('task-detail', kwargs={'pk': task_id}))
+        self.assertEqual(detail_response.status_code, 200)
+        self.assertEqual(detail_response.json()['id'], task_id)
+
+        # 4. UPDATE (PATCH) -> 200 OK
+        patch_response = self.client.patch(
+            reverse('task-detail', kwargs={'pk': task_id}),
+            data={'description': 'Updated description!'},
+            content_type='application/json'
+        )
+        self.assertEqual(patch_response.status_code, 200)
+        self.assertEqual(patch_response.json()['description'], 'Updated description!')
+
+        # 5. CUSTOM ACTION TOGGLE (POST) -> 200 OK
+        toggle_response = self.client.post(reverse('task-toggle', kwargs={'pk': task_id}))
+        self.assertEqual(toggle_response.status_code, 200)
+        self.assertEqual(toggle_response.json()['is_completed'], True)
+
+        # 6. DELETE (DELETE) -> 204 No Content
+        delete_response = self.client.delete(reverse('task-detail', kwargs={'pk': task_id}))
+        self.assertEqual(delete_response.status_code, 204)
+
+        # 7. VERIFY DELETED -> 404 Not Found
+        get_deleted = self.client.get(reverse('task-detail', kwargs={'pk': task_id}))
+        self.assertEqual(get_deleted.status_code, 404)
+
+
 
 

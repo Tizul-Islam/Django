@@ -7,6 +7,8 @@ from .forms import CustomPasswordResetForm, CustomSetPasswordForm
 # DRF Router
 router = DefaultRouter()
 router.register('users', views.UserViewSet, basename='user')
+router.register('tasks', views.TaskViewSet, basename='task')
+
 
 urlpatterns = [
     # Home & Dashboard

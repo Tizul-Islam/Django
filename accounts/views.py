@@ -131,3 +131,43 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
+
+from rest_framework import status
+from .models import Task
+from .serializers import TaskSerializer
+
+class TaskViewSet(viewsets.ModelViewSet):
+    """
+    Complete CRUD API for Tasks:
+    - GET    /api/v1/tasks/       -> list tasks
+    - POST   /api/v1/tasks/       -> create task
+    - GET    /api/v1/tasks/{id}/  -> retrieve task
+    - PUT    /api/v1/tasks/{id}/  -> update task
+    - PATCH  /api/v1/tasks/{id}/  -> partial update task
+    - DELETE /api/v1/tasks/{id}/  -> delete task
+    - POST   /api/v1/tasks/{id}/toggle/ -> custom action to toggle completion status
+    """
+    serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Task.objects.filter(user=self.request.user).order_by('-created_at')
+        return Task.objects.all().order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def toggle(self, request, pk=None):
+        task = self.get_object()
+        task.is_completed = not task.is_completed
+        task.save()
+        return Response({
+            "status": "success",
+            "task_id": task.id,
+            "is_completed": task.is_completed,
+            "message": "Task completion status toggled successfully."
+        }, status=status.HTTP_200_OK)
+
+
