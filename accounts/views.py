@@ -171,3 +171,31 @@ class TaskViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_200_OK)
 
 
+from rest_framework.decorators import permission_classes
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def task_statistics_view(request):
+    """
+    Function-Based API View (FBV) that returns aggregated task statistics
+    for the authenticated user.
+    """
+    user_tasks = Task.objects.filter(user=request.user)
+    total = user_tasks.count()
+    completed = user_tasks.filter(is_completed=True).count()
+    pending = total - completed
+    rate = f"{(completed / total * 100):.1f}%" if total > 0 else "0%"
+
+    return Response({
+        "status": "success",
+        "user": request.user.username,
+        "statistics": {
+            "total_tasks": total,
+            "completed_tasks": completed,
+            "pending_tasks": pending,
+            "completion_rate": rate,
+        }
+    })
+
+
+

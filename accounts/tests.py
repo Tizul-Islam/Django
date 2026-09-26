@@ -140,6 +140,27 @@ class AuthSystemTests(TestCase):
         get_deleted = self.client.get(reverse('task-detail', kwargs={'pk': task_id}))
         self.assertEqual(get_deleted.status_code, 404)
 
+    def test_task_statistics_fbv(self):
+        # 1. Unauthenticated request rejected
+        anon_response = self.client.get(reverse('task_stats'))
+        self.assertIn(anon_response.status_code, [401, 403])
+
+        # 2. Authenticated request
+        self.client.login(username='testuser', password='Password123!')
+        from .models import Task
+        Task.objects.create(user=self.user, title='Test Task 1', is_completed=True)
+        Task.objects.create(user=self.user, title='Test Task 2', is_completed=False)
+
+        auth_response = self.client.get(reverse('task_stats'))
+        self.assertEqual(auth_response.status_code, 200)
+        data = auth_response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['statistics']['total_tasks'], 2)
+        self.assertEqual(data['statistics']['completed_tasks'], 1)
+        self.assertEqual(data['statistics']['pending_tasks'], 1)
+        self.assertEqual(data['statistics']['completion_rate'], '50.0%')
+
+
 
 
 

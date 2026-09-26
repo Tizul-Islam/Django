@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/', views.api_info_view, name='api_info'),
     path('api/users/', views.UserListAPIView.as_view(), name='api_user_list'),
     path('api/v1/', include(router.urls)),
+    path('api/v1/task-stats/', views.task_statistics_view, name='task_stats'),
 
     # Password Change (Logged in)
     path('password-change/', views.change_password_view, name='password_change'),
