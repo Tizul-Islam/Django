@@ -160,6 +160,48 @@ class AuthSystemTests(TestCase):
         self.assertEqual(data['statistics']['pending_tasks'], 1)
         self.assertEqual(data['statistics']['completion_rate'], '50.0%')
 
+    def test_jwt_authentication_flow(self):
+        # 1. Obtain JWT token pair (POST /api/token/)
+        token_response = self.client.post(
+            reverse('token_obtain_pair'),
+            data={'username': 'testuser', 'password': 'Password123!'},
+            content_type='application/json'
+        )
+        self.assertEqual(token_response.status_code, 200)
+        tokens = token_response.json()
+        self.assertIn('access', tokens)
+        self.assertIn('refresh', tokens)
+
+        access_token = tokens['access']
+        refresh_token = tokens['refresh']
+
+        # 2. Access protected endpoint with Bearer token
+        protected_response = self.client.get(
+            reverse('task_stats'),
+            HTTP_AUTHORIZATION=f'Bearer {access_token}'
+        )
+        self.assertEqual(protected_response.status_code, 200)
+        self.assertEqual(protected_response.json()['user'], 'testuser')
+
+        # 3. Verify access token (/api/token/verify/)
+        verify_response = self.client.post(
+            reverse('token_verify'),
+            data={'token': access_token},
+            content_type='application/json'
+        )
+        self.assertEqual(verify_response.status_code, 200)
+
+        # 4. Refresh token to get new access token (/api/token/refresh/)
+        refresh_response = self.client.post(
+            reverse('token_refresh'),
+            data={'refresh': refresh_token},
+            content_type='application/json'
+        )
+        self.assertEqual(refresh_response.status_code, 200)
+        new_tokens = refresh_response.json()
+        self.assertIn('access', new_tokens)
+
+
 
 
 

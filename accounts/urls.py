@@ -3,6 +3,11 @@ from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 from . import views
 from .forms import CustomPasswordResetForm, CustomSetPasswordForm
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 # DRF Router
 router = DefaultRouter()
@@ -11,6 +16,7 @@ router.register('tasks', views.TaskViewSet, basename='task')
 
 
 urlpatterns = [
+
     # Home & Dashboard
     path('', views.dashboard_view, name='home'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
@@ -25,6 +31,12 @@ urlpatterns = [
     path('api/users/', views.UserListAPIView.as_view(), name='api_user_list'),
     path('api/v1/', include(router.urls)),
     path('api/v1/task-stats/', views.task_statistics_view, name='task_stats'),
+
+    # JWT Authentication Endpoints
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
 
     # Password Change (Logged in)
     path('password-change/', views.change_password_view, name='password_change'),
