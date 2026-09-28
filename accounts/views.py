@@ -149,6 +149,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     """
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filterset_fields = ['is_completed']
+    search_fields = ['title', 'description']
 
     def get_queryset(self):
         if self.request.user.is_authenticated:

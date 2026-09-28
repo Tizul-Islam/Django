@@ -201,6 +201,37 @@ class AuthSystemTests(TestCase):
         new_tokens = refresh_response.json()
         self.assertIn('access', new_tokens)
 
+    def test_drf_filtering_and_search(self):
+        from .models import Task
+        Task.objects.all().delete()
+        Task.objects.create(user=self.user, title='Learn Python Basics', description='Variables and loops', is_completed=True)
+        Task.objects.create(user=self.user, title='Learn Django REST Framework', description='APIViews and Serializers', is_completed=False)
+        Task.objects.create(user=self.user, title='Deploy to Cloud', description='Deploy with Docker', is_completed=True)
+
+        # 1. Filter by is_completed=true
+        resp_completed = self.client.get(f"{reverse('task-list')}?is_completed=true")
+        self.assertEqual(resp_completed.status_code, 200)
+        self.assertEqual(len(resp_completed.json()), 2)
+
+        # 2. Filter by is_completed=false
+        resp_pending = self.client.get(f"{reverse('task-list')}?is_completed=false")
+        self.assertEqual(resp_pending.status_code, 200)
+        self.assertEqual(len(resp_pending.json()), 1)
+        self.assertEqual(resp_pending.json()[0]['title'], 'Learn Django REST Framework')
+
+        # 3. Search by keyword ?search=Django
+        resp_search = self.client.get(f"{reverse('task-list')}?search=Django")
+        self.assertEqual(resp_search.status_code, 200)
+        self.assertEqual(len(resp_search.json()), 1)
+        self.assertIn('Django', resp_search.json()[0]['title'])
+
+        # 4. Search by keyword in description ?search=Docker
+        resp_search_desc = self.client.get(f"{reverse('task-list')}?search=Docker")
+        self.assertEqual(resp_search_desc.status_code, 200)
+        self.assertEqual(len(resp_search_desc.json()), 1)
+        self.assertEqual(resp_search_desc.json()[0]['title'], 'Deploy to Cloud')
+
+
 
 
 
