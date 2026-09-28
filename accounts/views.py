@@ -122,7 +122,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     A ViewSet that provides 'list' and 'retrieve' actions for users,
     plus a custom action 'me' to get the current authenticated user's profile.
     """
-    queryset = User.objects.all().order_by('-date_joined')
+    # ⚡ Performance: prefetch_related avoids N+1 queries for nested tasks
+    queryset = User.objects.all().prefetch_related('tasks').order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
@@ -153,9 +154,10 @@ class TaskViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'description']
 
     def get_queryset(self):
+        # ⚡ Performance: select_related joins User table in 1 single SQL query
         if self.request.user.is_authenticated:
-            return Task.objects.filter(user=self.request.user).order_by('-created_at')
-        return Task.objects.all().order_by('-created_at')
+            return Task.objects.filter(user=self.request.user).select_related('user').order_by('-created_at')
+        return Task.objects.all().select_related('user').order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

@@ -63,6 +63,8 @@ class AuthSystemTests(TestCase):
         self.assertEqual(response.json()['status'], 'success')
 
     def test_drf_user_list_endpoint(self):
+        from .models import Task
+        Task.objects.create(user=self.user, title='Nested Task Sample')
         response = self.client.get(reverse('api_user_list'))
         self.assertEqual(response.status_code, 200)
         users = response.json()
@@ -71,6 +73,11 @@ class AuthSystemTests(TestCase):
         # Check ModelSerializer fields and SerializerMethodField
         self.assertEqual(users[0]['username'], 'testuser')
         self.assertIn('full_name', users[0])
+        # Check Nested Serializers & Relationships
+        self.assertIn('tasks', users[0])
+        self.assertIn('task_count', users[0])
+        self.assertTrue(users[0]['task_count'] >= 1)
+
 
     def test_viewset_and_router(self):
         # 1. Router list action (user-list)
